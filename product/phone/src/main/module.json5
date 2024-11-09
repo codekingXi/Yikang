@@ -9,11 +9,17 @@
       "tablet",
       "2in1"
     ],
+    "metadata": [
+      {
+        "name": "client_id",
+        "value": "112506057"
+      }
+    ],
     "requestPermissions": [
       {
         "name": "ohos.permission.INTERNET"
       },
-      ],
+    ],
     "deliveryWithInstall": true,
     "installationFree": false,
     "pages": "$profile:main_pages",
