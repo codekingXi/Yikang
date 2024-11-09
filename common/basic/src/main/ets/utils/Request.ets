@@ -1,5 +1,8 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from '@ohos/axios'
 import { Log } from '@abner/log'
+import { auth } from './Auth'
+import { promptAction, router } from '@kit.ArkUI'
+import { RouterConfig } from '../../../../Index'
 
 //创建实例
 const instance = axios.create({
@@ -8,9 +11,12 @@ const instance = axios.create({
 })
 //请求
 instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  //注入token
-  config.headers.Authorization =
-    'eyJhbGciOiJIUzI1NiJ9.eyJjdXJyZW50VXNlciI6IntcInVzZXJuYW1lXCI6XCIzNTQyMzQ4NEBxcS5jb21cIixcInBhc3N3b3JkXCI6XCJcIixcIm5pY2tOYW1lXCI6XCLmiqTnkIblkZgxXCIsXCJlbWFpbFwiOlwiMzU0MjM0ODRAcXEuY29tXCIsXCJyZWFsTmFtZVwiOlwi5oqk55CG5ZGYMVwiLFwibW9iaWxlXCI6XCIxODIxMTAyMTg5NlwiLFwic2V4XCI6XCIwXCIsXCJkZXB0Tm9cIjpcIjEwMDAwMTAwNTAwMDAwMFwiLFwicG9zdE5vXCI6XCIxMDAwMDEwMDUwMDMwMDBcIixcImRhdGFTdGF0ZVwiOlwiMFwiLFwiYXZhdGFyXCI6XCJodHRwczovL3lqeS1vc3MtdmlkZW9zLm9zcy1hY2NlbGVyYXRlLmFsaXl1bmNzLmNvbS9ncnp4aHouanBnXCIsXCJpZFwiOjE2NzE0MDMyNTY1MTkwNzgyNzUsXCJjcmVhdGVUaW1lXCI6MTcxNTU2ODM5MDAwMCxcInVwZGF0ZVRpbWVcIjoxNzE1NTY4MzkwMDAwLFwiY3JlYXRlQnlcIjoxNjcxNDAzMjU2NTE5MDc4MTM4fSIsImV4cCI6MTQ2NzU2NTk0Nzd9.8PrMKBNrVVCfcI4DgICxp6oBQGqy46m3oglFQCiKtzw'
+  //获取token
+  const token = auth.getToken()
+  if(token){
+    //注入token
+    config.headers.Authorization = token
+  }
   return config
 }, (e: AxiosError) => {
   AlertDialog.show({ message: JSON.stringify(e.message) })
@@ -24,9 +30,17 @@ instance.interceptors.response.use((res: AxiosResponse) => {
   }
   Log.info('请求成功' + JSON.stringify(res.data.data))
   return res.data.data
-}, (e: AxiosError) => {
-  AlertDialog.show({ message: JSON.stringify(e.message) })
-  Log.error('响应异常' + JSON.stringify(e.message))
+}, async (e: AxiosError) => {
+  if(e.response?.status===401){
+    //token失效
+    promptAction.showToast({message:'登录失败'})
+    await auth.delToken()
+    router.replaceUrl({
+      url:RouterConfig.LOGIN_URL
+    })
+  }else {
+    Log.error('响应异常'+JSON.stringify(e))
+  }
   return Promise.reject(e)
 })
 
