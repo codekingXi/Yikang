@@ -2,27 +2,33 @@ import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { window } from '@kit.ArkUI';
 import "../utils/plugin"
 import { Log } from '@abner/log';
+import { auth, infoConfig, RouterConfig } from '@hm/basic';
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     Log.info('Ability onDestroy');
+    infoConfig.context = this.context
   }
 
   onDestroy(): void {
     Log.info('Ability onDestroy');
   }
 
-  onWindowStageCreate(windowStage: window.WindowStage): void {
+  async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
     // Main window is created, set main page for this ability
     Log.info('Ability onWindowStageCreate');
-
-    windowStage.loadContent('pages/Index', (err, data) => {
-      if (err.code) {
-        Log.error('Failed to load the content. Cause: %{public}s' + JSON.stringify(err) ?? '');
-        return;
-      }
-      Log.info('Succeeded in loading the content. Data: %{public}s' + JSON.stringify(data) ?? '');
-    });
+    //创建子窗口
+    const win = await windowStage.createSubWindow(infoConfig.AD_WIN)
+    //显示子窗口
+    await win.showWindow()
+    //设置子窗口内容
+    win.setUIContent(RouterConfig.SPLASH_URL)
+    //有token就进入首页，没有就进入登录页
+    if (auth.getToken()) {
+      windowStage.loadContent('pages/Index');
+    } else {
+      windowStage.loadContent(RouterConfig.LOGIN_URL);
+    }
   }
 
   onWindowStageDestroy(): void {
