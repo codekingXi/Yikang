@@ -11,6 +11,8 @@ windowManager.enableFullScreen()
 @Entry
 @Component
 struct Index {
+  @StorageProp('topHeight')
+  topHeight: number = 0
   @StorageProp('bottomHeight')
   bottomHeight: number = 0
   @State
@@ -60,7 +62,7 @@ struct Index {
     }) {
       ForEach(this.tabBars, (item: TabBarItem, index: number) => {
         TabContent() {
-          // tab 内容=》切换子组件
+          // tab 内容=>切换子组件
           if (index === 0) Home()
           else if (index === 1) Duty()
           else if (index === 2) Stage()
@@ -71,6 +73,7 @@ struct Index {
     }
     .barPosition(BarPosition.End)
     .barBackgroundColor('#fff')
-    .padding({ bottom: this.bottomHeight })
+    .padding({ bottom: 0 })
+    .margin({ top: -this.topHeight })
   }
 }
