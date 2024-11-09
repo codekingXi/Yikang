@@ -67,6 +67,7 @@ export struct Mine {
             .fontColor(ResManager.EC_MID_19)
             .fontSize(ResManager.EC_MODULE_TITLE_FS)
             .fontWeight(500)
+            .margin({bottom:10})
           // Image($r('app.media.ic_arrow_black'))
           //   .width(7)
           //   .height(16)
