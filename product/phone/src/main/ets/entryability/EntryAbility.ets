@@ -23,12 +23,15 @@ export default class EntryAbility extends UIAbility {
     await win.showWindow()
     //设置子窗口内容
     win.setUIContent(RouterConfig.SPLASH_URL)
-    //有token就进入首页，没有就进入登录页
-    if (auth.getToken()) {
-      windowStage.loadContent('pages/Index');
-    } else {
-      windowStage.loadContent(RouterConfig.LOGIN_URL);
-    }
+    windowStage.loadContent('pages/Index')
+    const token = auth.getToken() as string
+    Log.info('token:'+ token)
+    //有token就进入首页，没有就进入登录页  因华为账号权限关闭,无法获取token 注释掉
+    // if (auth.getToken()) {
+    //   windowStage.loadContent('pages/Index');
+    // } else {
+    //   windowStage.loadContent(RouterConfig.LOGIN_URL);
+    // }
   }
 
   onWindowStageDestroy(): void {
