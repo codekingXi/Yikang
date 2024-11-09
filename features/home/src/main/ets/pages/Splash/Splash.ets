@@ -20,12 +20,31 @@ struct Splash {
     }, 1000)
   }
 
-  aboutToAppear(): void {
+  onPageShow(): void {
     this.countdown()
   }
 
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
+      //倒计时按钮
+      Text('剩余' + this.count + '秒跳过')
+        .fontSize(24)
+        .fontColor(Color.White)
+        .margin({ right: 15 })
+        .backgroundColor('rgba(83, 83, 83, 0.50)')
+        .padding({
+          left: 10,
+          right: 10,
+          top: 5,
+          bottom: 5
+        })
+        .borderRadius(20)
+        .position({ top: 50, right: 5 })
+        .zIndex(3)
+        .onClick(() => {
+          clearInterval(this.timer)
+          window.findWindow(infoConfig.AD_WIN).destroyWindow()
+        })
       // 闪图
       Image($r('app.media.pic_sp1'))
         .width('100%')
@@ -52,11 +71,9 @@ struct Splash {
       .justifyContent(FlexAlign.Center)
       .backgroundColor('#fff')
       .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.BOTTOM])
-
     }
     .width('100%')
     .height('100%')
     .backgroundColor(ResManager.EC_MID_BG)
-
   }
 }
