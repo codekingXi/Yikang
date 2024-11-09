@@ -1,5 +1,4 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from '@ohos/axios'
-import { promptAction } from '@kit.ArkUI'
 import { Log } from '@abner/log'
 
 //创建实例
