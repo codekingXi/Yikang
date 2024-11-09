@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\张杨熙\\.ohos\\config\\default_yikang-elder-care__y11Qgo2mUrfc8BTym3orE329d4AKRRA6nAEiXY7smI=.cer",
-          "storePassword": "0000001B55441DC6060252D733A558EF9293E8E594B3794CB7BBE7AB3B2D43787A139DA3AED3BCC1C18F2C",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B0B79E09636836595245487B5DE6026085176FBE6F021F5E3E9D89BFE9ED1F0D01D4C733C17C6B2",
-          "profile": "C:\\Users\\张杨熙\\.ohos\\config\\default_yikang-elder-care__y11Qgo2mUrfc8BTym3orE329d4AKRRA6nAEiXY7smI=.p7b",
+          "storePassword": "000000198BA0A35D3337F73A804DE04EF8889E0CA6AF376DCCC7D14DAB0D79D17D073B88BDA2790D1D",
+          "certpath": "C:/Users/张杨熙/Desktop/ykyl/ykyl.cer",
+          "keyAlias": "ykyl",
+          "keyPassword": "00000019DF5E70A0EE6A806421FBC37141C875291651A9A11B8BDE13309464CEFBA253C4F611AD579C",
+          "profile": "C:/Users/张杨熙/Desktop/ykyl/ykyl.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\张杨熙\\.ohos\\config\\default_yikang-elder-care__y11Qgo2mUrfc8BTym3orE329d4AKRRA6nAEiXY7smI=.p12"
+          "storeFile": "C:/Users/张杨熙/Desktop/ykyl/ykyl.p12"
         }
       }
     ],
