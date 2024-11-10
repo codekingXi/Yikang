@@ -4,11 +4,37 @@ import camera from '@ohos.multimedia.camera';
 import common from '@ohos.app.ability.common';
 import { BusinessError } from '@ohos.base';
 import { ResManager } from '../utils/ResManager';
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
 
 @CustomDialog
 export struct EcDialogUpload {
   // 控制器
   controller: CustomDialogController
+  callBack:(url:string)=>void=()=>{}
+  //拍照
+  async takePhoto() {
+    const result = await cameraPicker.pick(getContext(), [cameraPicker.PickerMediaType.PHOTO], {
+      cameraPosition: camera.CameraPosition.CAMERA_POSITION_BACK
+    })
+    if (result) {
+      this.callBack(result.resultUri)
+    }
+    this.controller.close()
+  }
+
+  //打开相册
+  async selectPhoto() {
+    const Photo = new photoAccessHelper.PhotoViewPicker()
+    const results = await Photo.select({
+      MIMEType: photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE,
+      maxSelectNumber: 1
+    })
+    const result = results.photoUris[0]
+    if(result){
+      this.callBack(result)
+    }
+    this.controller.close()
+  }
 
   build() {
     Column() {
@@ -22,7 +48,9 @@ export struct EcDialogUpload {
             .width('100%')
             .textAlign(TextAlign.Center)
             .padding(15)
-        }
+        }.onClick(() => {
+          this.takePhoto()
+        })
 
         ListItem() {
           Text('从相册选择')
@@ -32,7 +60,9 @@ export struct EcDialogUpload {
             .width('100%')
             .textAlign(TextAlign.Center)
             .padding(15)
-        }
+        }.onClick(() => {
+          this.selectPhoto()
+        })
 
         ListItem() {
           Text('取消')
@@ -42,7 +72,9 @@ export struct EcDialogUpload {
             .width('100%')
             .textAlign(TextAlign.Center)
             .padding(15)
-        }
+        }.onClick(() => {
+          this.controller.close()
+        })
       }
       .width('100%')
       .height('auto')
