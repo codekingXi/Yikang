@@ -23,6 +23,8 @@ export interface UnBindProductItem {
 @Entry
 @Component
 struct BindDevice {
+  @State
+  refreshFlag: number = 0
   @StorageProp('topHeight')
   topHeight: number = 0
   // 1. 列表
@@ -74,6 +76,8 @@ struct BindDevice {
   // 2. 产品选择和折叠
   // 加载更多和收起
   toggle(item: UnBindProductItem) {
+    item.isExpand = !item.isExpand
+    this.refreshFlag++
   }
 
   // 选择某个产品下设备
@@ -211,15 +215,14 @@ struct BindDevice {
       Stack({ alignContent: Alignment.Bottom }) {
         // 产品列表
         Column() {
-          List({
-            space: 10
-          }) {
+          List({ space: 10 }) {
             ForEach(this.list, (item: UnBindProductItem) => {
               ListItem() {
                 this.productItem(item)
               }
-            }
-            )
+            },(item:UnBindProductItem,index:number)=>{
+              return JSON.stringify(item) + this.refreshFlag
+            })
           }
           .width('100%')
           .height('100%')
