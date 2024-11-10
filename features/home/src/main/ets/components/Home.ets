@@ -1,4 +1,4 @@
-import { ResManager } from '@hm/basic/Index'
+import { DeviceBuilder, ResManager, RouterConfig } from '@hm/basic/Index'
 import router from '@ohos.router'
 
 // 模块排列位置
@@ -166,15 +166,7 @@ export struct Home {
               .fontWeight(500)
               .margin({ bottom: 13 })
             // 内容
-            Row({ space: 10 }) {
-              this.careItem('设备安装', $r('app.media.icon_home_sbaz'), Pos.y, 'pages/device/SetupDevicePage')
-              this.careItem('设备绑定', $r('app.media.icon_home_sbkz'), Pos.y, 'pages/device/BindDevicePage')
-              this.careItem('我的设备', $r('app.media.icon_home_wdsb'), Pos.y, 'pages/device/MyDevicePage')
-              this.careItem('报警设备', $r('app.media.icon_home_bjsb'), Pos.y, 'pages/device/AlarmDevicePage')
-
-            }
-            .width('100%')
-            .justifyContent(FlexAlign.SpaceBetween)
+            DeviceBuilder()
 
           }
           .width('100%')
