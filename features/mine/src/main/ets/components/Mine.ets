@@ -1,10 +1,23 @@
 import router from '@ohos.router'
-import { ResManager } from '@hm/basic/Index'
+import { DeviceBuilder, getUserApi, ResManager, RouterConfig, UserData } from '@hm/basic'
 
 @Component
 export struct Mine {
   @StorageProp('topHeight')
   topHeight: number = 0
+  @State
+  user: UserData = {} as UserData
+
+  async getUserInfo() {
+    this.user = await getUserApi()
+  }
+
+  aboutToAppear(): void {
+    this.getUserInfo()
+    getContext().eventHub.on('updateUser',()=>{
+      this.getUserInfo()
+    })
+  }
 
   @Builder
   cellItem(title: string, url: string = '') {
@@ -38,22 +51,32 @@ export struct Mine {
           .padding({ top: this.topHeight })
         // 个人信息
         Column({ space: 5 }) {
-          Image('https://img2.baidu.com/it/u=130573784,2479509663&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=534')
+          Image(this.user.avatar|| 'https://img2.baidu.com/it/u=130573784,2479509663&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=534')
             .width(74)
             .aspectRatio(1)
             .borderRadius(37)
             .border({ width: 5, color: '#AEE8E4' })
-            .shadow({ offsetX: 0, offsetY: 2, radius: 21, color: '#0aa9941f' })
-          Text('刘大壮')
+            .shadow({
+              offsetX: 0,
+              offsetY: 2,
+              radius: 21,
+              color: '#0aa9941f'
+            })
+          Text(this.user.nickName|| '匿名用户')
             .fontSize(ResManager.EC_PAGE_TITLE_FS)
             .fontColor(ResManager.EC_MID_BLACK)
             .fontWeight(500)
-          Text('sijigaowa@163.com')
+          Text(this.user.username|| 'sijigaowa@163.com')
             .fontSize(13)
             .fontColor(ResManager.EC_MID_59)
 
         }
         .margin({ top: 64 - this.topHeight })
+        .onClick(()=>{
+          router.pushUrl({
+            url:RouterConfig.USER_SET_URL
+          })
+        })
       }
       .width('100%')
       .height(330)
@@ -67,7 +90,6 @@ export struct Mine {
             .fontColor(ResManager.EC_MID_19)
             .fontSize(ResManager.EC_MODULE_TITLE_FS)
             .fontWeight(500)
-            .margin({bottom:10})
           // Image($r('app.media.ic_arrow_black'))
           //   .width(7)
           //   .height(16)
@@ -76,11 +98,11 @@ export struct Mine {
 
         // 导航：设备管理
         Row({ space: 10 }) {
-
+          DeviceBuilder()
         }
         .width('100%')
         .justifyContent(FlexAlign.SpaceBetween)
-
+        .margin(16)
       }
       .margin({ top: -80, left: ResManager.EC_CONTENT_SPACE, right: ResManager.EC_CONTENT_SPACE })
       // .width('100%')
