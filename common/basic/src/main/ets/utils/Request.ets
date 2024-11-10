@@ -13,7 +13,7 @@ const instance = axios.create({
 instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   //获取token
   const token = auth.getToken()
-  if(token){
+  if (token) {
     //注入token
     config.headers.Authorization = token
   }
@@ -31,16 +31,18 @@ instance.interceptors.response.use((res: AxiosResponse) => {
   Log.info('请求成功' + JSON.stringify(res.data.data))
   return res.data.data
 }, async (e: AxiosError) => {
-  if(e.response?.status===401){
-    //token失效
-    promptAction.showToast({message:'登录失败'})
-    await auth.delToken()
-    router.replaceUrl({
-      url:RouterConfig.LOGIN_URL
-    })
-  }else {
-    Log.error('响应异常'+JSON.stringify(e))
-  }
+  // TODO 华为账号功能无法使用 注释掉
+  // if(e.response?.status===401){
+  //   //token失效
+  //   promptAction.showToast({message:'登录失败'})
+  //   await auth.delToken()
+  //   router.replaceUrl({
+  //     url:RouterConfig.LOGIN_URL
+  //   })
+  // }else {
+  //   Log.error('响应异常'+JSON.stringify(e))
+  // }
+  Log.error('响应异常' + JSON.stringify(e))
   return Promise.reject(e)
 })
 
