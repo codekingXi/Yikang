@@ -27,7 +27,7 @@ struct Splash {
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
       //倒计时按钮
-      Text('剩余' + this.count + '秒跳过')
+      Text(this.count + '秒后跳过')
         .fontSize(24)
         .fontColor(Color.White)
         .margin({ right: 15 })
