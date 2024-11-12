@@ -1,23 +1,10 @@
 import { EcDialogTips } from '@itheima/wing-care'
 import router from '@ohos.router'
-import { ResManager } from '@hm/basic/Index'
+import { getDeviceMap, ResManager, RouterConfig } from '@hm/basic/Index'
 import { util } from '@kit.ArkTS'
 import { Log } from '@abner/log'
-
-export interface DeviceItem {
-  iotId: string
-  nodeId: string
-  deviceName: string
-  isSelected: boolean
-}
-
-export interface UnBindProductItem {
-  productId: string
-  productName: string
-  // 是否展开：false 没有点击查看更多 | true 点击了查看更多
-  isExpand: boolean
-  deviceList: DeviceItem[]
-}
+import { DeviceItem, DeviceItemModel, UnBindProductItem, UnBindProductItemModel } from '../../viewmodel'
+import { getUnBindDeviceListApi } from '../../api'
 
 
 @Entry
@@ -29,49 +16,16 @@ struct BindDevice {
   topHeight: number = 0
   // 1. 列表
   @State
-  list: UnBindProductItem[] = []
+  list: UnBindProductItemModel[] = []
   // 加载数据
-  load = () => {
+  load = async () => {
     // 请求数据
-    setTimeout(() => {
-      for (let index = 0; index < 3; index++) {
-        if (index === 0) {
-          this.list.push({
-            productId: util.generateRandomUUID(true),
-            productName: '智能血糖' + (this.list.length + 1),
-            isExpand: false,
-            deviceList: Array.from(Array(6))
-              .map((it: null, i: number) => {
-                let _dv: DeviceItem = {
-                  iotId: util.generateRandomUUID(true),
-                  nodeId: util.generateRandomUUID(true),
-                  deviceName: 'blood' + (i + 1),
-                  isSelected: false
-                }
-                return _dv
-              })
-          })
-        } else {
-          this.list.push({
-            productId: util.generateRandomUUID(true),
-            productName: '智能门禁' + (this.list.length + 1),
-            isExpand: false,
-            deviceList: Array.from(Array(10))
-              .map((it: null, i: number) => {
-                let _dv: DeviceItem = {
-                  iotId: util.generateRandomUUID(true),
-                  nodeId: util.generateRandomUUID(true),
-                  deviceName: 'door' + (i + 1),
-                  isSelected: false
-                }
-                return _dv
-              })
-          })
-        }
-
-      }
-    }, 1000)
+    this.list = await getUnBindDeviceListApi()
   }
+  @State
+  currentProduct: UnBindProductItemModel = new UnBindProductItemModel({} as UnBindProductItem)
+  @State
+  currentSelect: DeviceItem = {} as DeviceItem
 
   // 2. 产品选择和折叠
   // 加载更多和收起
@@ -86,15 +40,27 @@ struct BindDevice {
    * @param item 当前选择产品
    * @param device 当前点击产品下的某个设备
    */
-  selectDevice(item: UnBindProductItem, device: DeviceItem) {
+  selectDevice(item: UnBindProductItemModel, device: DeviceItem) {
+    //找到的产品
+    const product = this.list.find(product => product.productId === item.productId)
+    //找到的设备
+    const activeDevice = product?.deviceList.find(list => list.iotId === device.iotId)
+    if (product && activeDevice) {
+      activeDevice.isSelected = !activeDevice.isSelected
+      this.refreshFlag++
+      //记录当前选中的产品和设备
+      this.currentProduct = product
+      this.currentSelect = activeDevice
+    }
+
   }
 
   @Builder
-  productItem(item: UnBindProductItem) {
+  productItem(item: UnBindProductItemModel) {
     Column({ space: 18 }) {
       // 1. 产品分类
       Row() {
-        Text(item.productName)
+        Text(getDeviceMap(item.productName)?.cn)
           .fontColor(ResManager.EC_MID_19)
           .fontSize(ResManager.EC_MODULE_TITLE_FS)
           .fontWeight(500)
@@ -216,11 +182,11 @@ struct BindDevice {
         // 产品列表
         Column() {
           List({ space: 10 }) {
-            ForEach(this.list, (item: UnBindProductItem) => {
+            ForEach(this.list, (item: UnBindProductItemModel) => {
               ListItem() {
                 this.productItem(item)
               }
-            },(item:UnBindProductItem,index:number)=>{
+            }, (item: UnBindProductItem, index: number) => {
               return JSON.stringify(item) + this.refreshFlag
             })
           }
@@ -238,10 +204,10 @@ struct BindDevice {
             .backgroundColor(ResManager.EC_MAIN_COLOR)
             .onClick(() => {
               router.pushUrl({
-                url: 'pages/device/NearDevicePage'
+                url: RouterConfig.DEVICE_NEAR_URL
               })
             })
-            .enabled(true ? true : false)
+            .enabled(this.currentSelect.iotId ? true : false)
         }
         .justifyContent(FlexAlign.Center)
         .width('100%')
