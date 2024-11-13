@@ -1,5 +1,7 @@
 import { EcDialogTips } from '@itheima/wing-care'
-import { ResManager } from '@hm/basic/Index'
+import { ResManager, RouterConfig } from '@hm/basic/Index'
+import { wfManager } from '../../utils/WifiManager'
+import { router } from '@kit.ArkUI'
 
 @Entry
 @Component
@@ -108,10 +110,23 @@ struct NetDoor {
     }),
     alignment: DialogAlignment.Center
   })
+  @State
+  isOk: boolean = false
+
+  // 下一步
+  next() {
+    if (wfManager.checkWifi()) {
+      router.pushUrl({
+        url: RouterConfig.DEVICE_DOOR_NET_CONNECT_URL
+      })
+    } else {
+      this.wifiDialog.open()
+    }
+  }
 
   aboutToAppear() {
     // this.notFoundDialog.open()
-    this.wifiDialog.open()
+    // this.wifiDialog.open()
   }
 
   build() {
@@ -146,7 +161,7 @@ struct NetDoor {
           Column() {
             Row() {
               Checkbox()
-                .select(true)
+                .select($$this.isOk)
                 .selectedColor(ResManager.EC_MAIN_COLOR)
               Text('指示灯闪烁')
                 .fontColor(ResManager.EC_MID_19)
@@ -158,7 +173,11 @@ struct NetDoor {
             Button('下一步')
               .width(230)
               .margin({ bottom: 25 })
+              .enabled(this.isOk)
               .backgroundColor(ResManager.EC_MAIN_COLOR)
+              .onClick(() => {
+                this.next()
+              })
 
             Text('未看到指示灯闪烁')
               .fontColor(ResManager.EC_MAIN_COLOR)
