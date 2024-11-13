@@ -6,7 +6,6 @@ import { Log } from '@abner/log'
 import { DeviceItem, DeviceItemModel, UnBindProductItem, UnBindProductItemModel } from '../../viewmodel'
 import { getUnBindDeviceListApi } from '../../api'
 
-
 @Entry
 @Component
 struct BindDevice {
@@ -22,17 +21,18 @@ struct BindDevice {
     // 请求数据
     this.list = await getUnBindDeviceListApi()
   }
+
+  // 2. 产品选择和折叠
+  // 加载更多和收起
+  toggle(item: UnBindProductItemModel) {
+    item.isExpand = !item.isExpand
+    this.refreshFlag++
+  }
+
   @State
   currentProduct: UnBindProductItemModel = new UnBindProductItemModel({} as UnBindProductItem)
   @State
   currentSelect: DeviceItem = {} as DeviceItem
-
-  // 2. 产品选择和折叠
-  // 加载更多和收起
-  toggle(item: UnBindProductItem) {
-    item.isExpand = !item.isExpand
-    this.refreshFlag++
-  }
 
   // 选择某个产品下设备
   /**
@@ -41,14 +41,12 @@ struct BindDevice {
    * @param device 当前点击产品下的某个设备
    */
   selectDevice(item: UnBindProductItemModel, device: DeviceItem) {
-    //找到的产品
     const product = this.list.find(product => product.productId === item.productId)
-    //找到的设备
-    const activeDevice = product?.deviceList.find(list => list.iotId === device.iotId)
+    const activeDevice = product?.deviceList.find(listItem => listItem.iotId === device.iotId)
     if (product && activeDevice) {
       activeDevice.isSelected = !activeDevice.isSelected
       this.refreshFlag++
-      //记录当前选中的产品和设备
+      // 记录当前选择的产品和设备
       this.currentProduct = product
       this.currentSelect = activeDevice
     }
@@ -88,7 +86,7 @@ struct BindDevice {
       GridRow({ columns: 2, gutter: 10 }) {
         // 数据超出 6 同时没有点击查看更多
         if (item.deviceList?.length! > 6 && !item.isExpand) {
-          ForEach(item.deviceList?.slice(0, 6), (device: DeviceItem, i: number) => {
+          ForEach(item.deviceList?.slice(0, 6), (device: DeviceItemModel, i: number) => {
             GridCol() {
               // Column() {
               if (i < 5) {
@@ -141,7 +139,7 @@ struct BindDevice {
           }
           )
         } else {
-          ForEach(item.deviceList, (device: DeviceItem) => {
+          ForEach(item.deviceList, (device: DeviceItemModel) => {
             GridCol() {
               Column() {
                 Text(device.deviceName)
@@ -181,14 +179,17 @@ struct BindDevice {
       Stack({ alignContent: Alignment.Bottom }) {
         // 产品列表
         Column() {
-          List({ space: 10 }) {
+          List({
+            space: 10
+          }) {
             ForEach(this.list, (item: UnBindProductItemModel) => {
               ListItem() {
                 this.productItem(item)
               }
-            }, (item: UnBindProductItem, index: number) => {
+            }, (item: UnBindProductItemModel, index: number) => {
               return JSON.stringify(item) + this.refreshFlag
-            })
+            }
+            )
           }
           .width('100%')
           .height('100%')
@@ -204,7 +205,10 @@ struct BindDevice {
             .backgroundColor(ResManager.EC_MAIN_COLOR)
             .onClick(() => {
               router.pushUrl({
-                url: RouterConfig.DEVICE_NEAR_URL
+                url: RouterConfig.DEVICE_NEAR_URL,
+                params: {
+                  iotId: this.currentSelect.iotId
+                }
               })
             })
             .enabled(this.currentSelect.iotId ? true : false)
