@@ -1,6 +1,8 @@
 import { EcDeviceTip } from '@itheima/wing-care';
-import { ResManager } from '@hm/basic/Index';
+import { ResManager, RouterConfig } from '@hm/basic/Index';
 import { router } from '@kit.ArkUI';
+import { blueManager } from '../../utils';
+import { BlueData } from '../../viewmodel';
 
 @Entry
 @Component
@@ -22,10 +24,18 @@ struct BindDeviceTip {
         EcDeviceTip({
           type: 'success',
           message: '绑定成功',
-          btnText: '去查看',
+          btnText: '去配网',
           closeUrl: '',
-          url: 'pages/device/MyDevicePage'
+          url: RouterConfig.DEVICE_DOOR_NET_URL
         })
+        Button('开门')
+          .width('100%')
+          .margin({
+            top: 16
+          })
+          .onClick(() => {
+            blueManager.openDoor()
+          })
       } else {
         EcDeviceTip({ type: 'fail', message: '绑定失败', btnText: '重新绑定' })
         Column({ space: 5 }) {
