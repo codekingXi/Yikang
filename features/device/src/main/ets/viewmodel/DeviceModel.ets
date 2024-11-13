@@ -1,14 +1,15 @@
 export class Device {
   name: string = ''
-  icon: Resource | string=''
+  icon: Resource | string = ''
 }
 
 export class DeviceCate {
   title: string = ''
-  list: Device[]=[]
+  list: Device[] = []
   cb?: () => void = () => {
   }
 }
+
 //  2. 未绑定设备列表
 export interface DeviceItem {
   iotId: string
@@ -24,6 +25,7 @@ export interface UnBindProductItem {
   isExpand: boolean
   deviceList: DeviceItem[]
 }
+
 export class DeviceItemModel implements DeviceItem {
   iotId: string = ''
   nodeId: string = ''
@@ -37,6 +39,7 @@ export class DeviceItemModel implements DeviceItem {
     this.isSelected = model.isSelected
   }
 }
+
 export class UnBindProductItemModel implements UnBindProductItem {
   productId: string = ''
   productName: string = ''
@@ -49,4 +52,12 @@ export class UnBindProductItemModel implements UnBindProductItem {
     this.isExpand = model.isExpand
     this.deviceList = model.deviceList
   }
+}
+
+// 下发给设备的数据类型(和硬件工程师约定)
+export interface BlueData {
+  status?: 200 | 400 //200成功,400失败
+  msg?: string //提示信息
+  command?: 'open' | 'wifi' //下发硬件执行
+  data?: string[] //连接wifi-> [account,password]
 }
