@@ -60,7 +60,7 @@ function careItem(param: DeviceBuilderParam) {
       left: 13,
       right: 13
     })
-    
+
     .modStyle()
     .onClick(() => {
       router.pushUrl({
