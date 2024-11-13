@@ -1,6 +1,10 @@
 import { EcDialogTips } from '@itheima/wing-care'
 import router from '@ohos.router'
-import { ResManager } from '@hm/basic/Index'
+import { ResManager, RouterConfig } from '@hm/basic/Index'
+import { blueManager } from '../../utils'
+import { promptAction } from '@kit.ArkUI'
+import { ble } from '@kit.ConnectivityKit'
+import { bindDeviceApi } from '../../api'
 
 @Entry
 @Component
@@ -14,7 +18,9 @@ struct NearDevice {
   timer: number = -1
 
   run() {
-
+    this.timer = setInterval(() => {
+      this.angle += this.step
+    }, 30)
   }
 
   // 2. 搜索状态：true 搜索中 | false 结束搜索
@@ -26,6 +32,24 @@ struct NearDevice {
 
   // 3. 搜索方法
   search() {
+    blueManager.checkBlue()
+      .then(res => {
+        if (res) {
+          blueManager.scanDevice((list: ble.ScanResult[]) => {
+            if (list.length) {
+              this.list = list.filter(item => item.deviceName.includes('ITHEIMA'))
+            }
+          })
+        }
+      })
+
+    //   扫描5秒后关闭
+    setTimeout(() => {
+      if (this.list.length) {
+        this.hasDeivce = true
+      }
+      clearInterval(this.timer)
+    }, 10 * 1000)
 
   }
 
@@ -33,6 +57,7 @@ struct NearDevice {
   reset() {
     this.isSearch = true
     this.hasDeivce = false
+    this.run()
     this.search()
   }
 
@@ -83,6 +108,19 @@ struct NearDevice {
     }),
     alignment: DialogAlignment.Bottom
   })
+  @State
+  list: ble.ScanResult[] = []
+  @State
+  isConnect: boolean = false
+  @State
+  currentIot: string = ''
+
+  async aboutToAppear() {
+    this.reset()
+
+    const params = router.getParams() as object
+    this.currentIot = params['iotId']
+  }
 
   build() {
     Navigation() {
@@ -93,6 +131,12 @@ struct NearDevice {
             Image(ResManager.IC_FJSB_SS)
               .width(180)
               .aspectRatio(1)
+              .rotate({
+                angle: this.angle
+              })
+              .animation({
+                duration: 200
+              })
 
             if (this.isSearch) {
               Text('正在查找附近可连接设备')
@@ -139,33 +183,33 @@ struct NearDevice {
       } else {
         Column() {
           // 标题
-          Row() {
-            Text('未连接设备')
-              .fontColor(ResManager.EC_MID_19)
-              .fontSize(ResManager.EC_MODULE_TITLE_FS)
-              .fontWeight(500)
-            LoadingProgress()
-              .margin({ left: 10 })
-              .width(20)
-              .height(20)
-              .color(ResManager.EC_MID_99)
+          if (!this.isConnect) {
+            Row() {
+              Text('未连接设备')
+                .fontColor(ResManager.EC_MID_19)
+                .fontSize(ResManager.EC_MODULE_TITLE_FS)
+                .fontWeight(500)
+              LoadingProgress()
+                .margin({ left: 10 })
+                .width(20)
+                .height(20)
+                .color(ResManager.EC_MID_99)
+            }
+            .width('100%')
+            .margin({ top: 18, bottom: 18 })
           }
-          .width('100%')
-          .margin({ top: 18, bottom: 18 })
 
           // 设备列表
           List({ space: 10 }) {
-            ForEach(
-              Array(20)
-                .fill(1),
-              (item: number, i: number) => {
+            ForEach(this.list,
+              (item: ble.ScanResult, i: number) => {
                 ListItem() {
                   Row() {
                     Column({ space: 5 }) {
-                      Text('SKEY_6709')
+                      Text(item.deviceName)
                         .fontColor(ResManager.EC_MID_19)
                         .fontSize(ResManager.EC_NORMAL_FS)
-                      Text('C4:D8:16:51:76:09')
+                      Text(item.deviceId)
                         .fontColor(ResManager.EC_MID_99)
                         .fontSize(ResManager.EC_SMALL_FS)
                     }
@@ -174,6 +218,18 @@ struct NearDevice {
                     Image($r('app.media.ic_sbbd_ly'))
                       .width(24)
                       .aspectRatio(1)
+                      .onClick(() => {
+                        // item.deviceId
+                        // TODO:设备连接
+                        blueManager.connectBlue(item.deviceId, async () => {
+                          this.isConnect = true
+                          await bindDeviceApi(this.currentIot)
+                          router.pushUrl({
+                            url: RouterConfig.DEVICE_BIND_TIP_URL,
+                            params: 1
+                          })
+                        })
+                      })
                   }
                   .width('100%')
                   .justifyContent(FlexAlign.SpaceBetween)
