@@ -1,6 +1,8 @@
-import { Device, DeviceCate } from '../../viewmodel/DeviceModel'
+import { Device, DeviceCate, DeviceItem, DeviceItemModel, UnBindProductItemModel } from '../../viewmodel/DeviceModel'
 import router from '@ohos.router'
-import { ResManager } from '@hm/basic/Index'
+import { getDeviceMap, ResManager, RouterConfig } from '@hm/basic/Index'
+import { getMyDeviceListApi, unbindDeviceApi } from '../../api'
+import { promptAction } from '@kit.ArkUI'
 
 // 设备选择
 @Entry
@@ -9,37 +11,11 @@ struct MyDevice {
   @StorageProp('topHeight')
   topHeight: number = 0
   scroller: Scroller = new Scroller()
-  private devices: DeviceCate[] = [
-    {
-      title: '智能门禁',
-      list: [
-        {
-          name: 'smoke alarm 001',
-          icon: $r("app.media.pic_shebei_mj")
-        },
-        {
-          name: 'smoke alarm 002',
-          icon: $r("app.media.pic_shebei_mj")
-        },
-      ]
-    },
-    {
-      title: '智能血糖仪',
-      list: [
-        {
-          name: 'Glucose meter 001',
-          icon: '/images/img_xzsb_dgncgq.png'
-        },
-        {
-          name: 'Glucose meter 002',
-          icon: '/images/img_xzsb_mcgyq.png'
-        }
-      ]
-    }
-  ]
+  @State
+  private devices: UnBindProductItemModel[] = []
 
   // 解绑
-  unbind() {
+  unbind(item: DeviceItemModel) {
     AlertDialog.show({
       title: '解除确认',
       message: '确认要解除该设备吗？',
@@ -53,12 +29,20 @@ struct MyDevice {
       secondaryButton: {
         value: '确定',
         fontColor: ResManager.EC_MAIN_COLOR,
-        action: () => {
-
+        action: async () => {
+          await unbindDeviceApi(item.iotId)
+          this.devices = await getMyDeviceListApi()
+          promptAction.showToast({
+            message: '解绑成功'
+          })
         }
       },
       alignment: DialogAlignment.Center
     })
+  }
+
+  async aboutToAppear() {
+    this.devices = await getMyDeviceListApi()
   }
 
   build() {
@@ -68,24 +52,24 @@ struct MyDevice {
         // 设备列表
         Scroll(this.scroller) {
           Column({ space: 20 }) {
-            ForEach(this.devices, (item: DeviceCate) => {
+            ForEach(this.devices, (product: UnBindProductItemModel) => {
               Column() {
                 // 标题
-                Text(item.title)
+                Text(getDeviceMap(product.productName)?.cn)
                   .fontColor(ResManager.EC_MID_19)
                   .fontSize(ResManager.EC_MODULE_TITLE_FS)
                   .fontWeight(500)
                   .margin({ bottom: 18 })
                 // 内容
                 GridRow({ columns: 2, gutter: { x: 10, y: 10 } }) {
-                  ForEach(item.list, (item: Device, i: number) => {
+                  ForEach(product.deviceList, (device: DeviceItemModel, i: number) => {
                     GridCol() {
                       Stack({ alignContent: Alignment.TopEnd }) {
                         Column({ space: 10 }) {
-                          Image(item.icon)
+                          Image(getDeviceMap(product.productName)?.icon)
                             .width(80)
                             .aspectRatio(1)
-                          Text(item.name)
+                          Text(device.deviceName)
                             .fontColor(ResManager.EC_MID_19)
                             .fontSize(ResManager.EC_SMALL_FS)
                         }
@@ -95,7 +79,7 @@ struct MyDevice {
                         .backgroundColor(ResManager.EC_MID_WHITE)
                         .onClick(() => {
                           router.pushUrl({
-                            url: 'pages/device/access_control/DoorControlPage'
+                            url: RouterConfig.DEVICE_DOOR_CONTROL_URL
                           })
                         })
 
@@ -104,7 +88,7 @@ struct MyDevice {
                           .fontSize(ResManager.EC_SMALL_FS)
                           .margin({ top: 10, right: 10 })
                           .onClick(() => {
-                            this.unbind()
+                            this.unbind(device)
                           })
 
                       }
