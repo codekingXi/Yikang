@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, InternalAxiosRequ
 import { Log } from '@abner/log'
 import { auth } from './Auth'
 import { promptAction, router } from '@kit.ArkUI'
-import { RouterConfig } from '../../../../Index'
+import { infoConfig, RouterConfig } from '../../../../Index'
 
 //创建实例
 const instance = axios.create({
@@ -15,7 +15,7 @@ instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = auth.getToken()
   if (token) {
     //注入token
-    config.headers.Authorization = token
+    config.headers.Authorization = token||infoConfig.TOKEN_KEY
   }
   return config
 }, (e: AxiosError) => {
