@@ -1,10 +1,23 @@
-import { ResManager } from '@hm/basic/Index'
+import { ResManager, RouterConfig } from '@hm/basic/Index'
+import wifiManager from '@ohos.wifiManager'
+import { wfManager } from '../../utils/WifiManager'
+import { router } from '@kit.ArkUI'
 
 @Entry
 @Component
 struct ScanWifi {
   @StorageProp('topHeight')
   topHeight: number = 0
+  @State
+  list: wifiManager.WifiScanInfo[] = []
+
+  scanWifi() {
+    this.list = wfManager.scanWifi()
+  }
+
+  aboutToAppear(): void {
+    this.scanWifi()
+  }
 
   build() {
     Navigation() {
@@ -26,38 +39,43 @@ struct ScanWifi {
 
         // 设备列表
         List({ space: 10 }) {
-          ForEach(
-            Array(20)
-              .fill(1),
-            (item: number, i: number) => {
-              ListItem() {
-                Row() {
-                  Column({ space: 5 }) {
-                    Text(item + '')
-                      .fontColor(ResManager.EC_MID_19)
-                      .fontSize(ResManager.EC_NORMAL_FS)
-                    Text(item + '')
-                      .fontColor(ResManager.EC_MID_99)
-                      .fontSize(ResManager.EC_SMALL_FS)
-                  }
-                  .alignItems(HorizontalAlign.Start)
-
-                  Image(ResManager.IC_MJPW_WIFI)
-                    .width(24)
-                    .aspectRatio(1)
+          ForEach(this.list, (item: wifiManager.WifiScanInfo, i: number) => {
+            ListItem() {
+              Row() {
+                Column({ space: 5 }) {
+                  Text(item.ssid)
+                    .fontColor(ResManager.EC_MID_19)
+                    .fontSize(ResManager.EC_NORMAL_FS)
+                  Text(item.bssid)
+                    .fontColor(ResManager.EC_MID_99)
+                    .fontSize(ResManager.EC_SMALL_FS)
                 }
-                .width('100%')
-                .justifyContent(FlexAlign.SpaceBetween)
-                .padding({
-                  left: 16,
-                  right: 16,
-                  top: 8,
-                  bottom: 8
-                })
-                .borderRadius(ResManager.EC_NORMAL_RD)
-                .backgroundColor('#fff')
+                .alignItems(HorizontalAlign.Start)
+
+                Image(ResManager.IC_MJPW_WIFI)
+                  .width(24)
+                  .aspectRatio(1)
               }
+              .width('100%')
+              .justifyContent(FlexAlign.SpaceBetween)
+              .padding({
+                left: 16,
+                right: 16,
+                top: 8,
+                bottom: 8
+              })
+              .borderRadius(ResManager.EC_NORMAL_RD)
+              .backgroundColor('#fff')
+            }
+            .onClick(() => {
+              router.back({
+                url: RouterConfig.DEVICE_DOOR_NET_CONNECT_URL,
+                params: {
+                  ssid: item.ssid
+                }
+              })
             })
+          })
         }
         .layoutWeight(1)
         .scrollBar(BarState.Off)
