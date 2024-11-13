@@ -1,4 +1,8 @@
-import { ResManager } from '@hm/basic/Index'
+import { ResManager, RouterConfig } from '@hm/basic/Index'
+import { router } from '@kit.ArkUI'
+import { BlueData } from '../../viewmodel'
+import { blueManager } from '../../utils'
+import { emitter } from '@kit.BasicServicesKit'
 
 @Entry
 @Component
@@ -26,11 +30,42 @@ struct ConnectNet {
   start() {
     this.linking = true
     this.run()
+    // ----------------------------------
+    // 进行设备指令下发
+    try {
+      // 设备需要的数据
+      const data: BlueData = {
+        command: 'wifi',
+        data: [this.wifiName, this.password]
+      }
+      blueManager.sendData(data)
+    } catch (err) {
+
+    }
   }
 
-  // aboutToAppear() {
-  //   this.run()
-  // }
+  @State
+  wifiName: string = '请选择'
+  @State
+  password: string = ''
+
+  onPageShow(): void {
+    const params = router.getParams() as object
+    if (params && params['ssid']) {
+      this.wifiName = params['ssid']
+    }
+  }
+
+  aboutToAppear() {
+    emitter.on('WifiConnect', (res) => {
+      router.pushUrl({
+        url: RouterConfig.DEVICE_DOOR_CONNECT_TIP_URL,
+        params: {
+          tip: res.data!.status === 200 ? 1 : 2
+        }
+      })
+    })
+  }
 
   build() {
     Navigation() {
@@ -64,7 +99,7 @@ struct ConnectNet {
           List() {
             ListItem() {
               Row() {
-                Text('YJY-5G')
+                Text(this.wifiName)
                   .fontColor(ResManager.EC_MID_19)
                   .fontSize(ResManager.EC_MODULE_TITLE_FS)
                   .fontWeight(500)
@@ -78,6 +113,9 @@ struct ConnectNet {
               .padding({ top: 14, bottom: 14 })
               .justifyContent(FlexAlign.SpaceBetween)
               .onClick(() => {
+                router.pushUrl({
+                  url: RouterConfig.DEVICE_DOOR_SCAN_WIFI_URL
+                })
               })
             }
 
@@ -89,7 +127,7 @@ struct ConnectNet {
                   .fontWeight(500)
 
                 Row() {
-                  TextInput({ placeholder: '请输入密码' })
+                  TextInput({ placeholder: '请输入密码', text: $$this.password })
                     .placeholderColor(ResManager.EC_MID_99)
                     .placeholderFont({ size: ResManager.EC_NORMAL_FS })
                     .backgroundColor('#fff')
